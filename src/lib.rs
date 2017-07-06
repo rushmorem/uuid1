@@ -4,13 +4,12 @@
 //! and ordering them.
 
 extern crate chrono;
-extern crate core;
 #[macro_use]
 extern crate lazy_static;
 extern crate rand;
 extern crate uuid;
 
-use core::fmt;
+use std::fmt;
 use std::fs::File;
 use std::io::Read;
 
@@ -21,6 +20,11 @@ use uuid::{Uuid, UuidV1Context};
 /// https://www.percona.com/blog/2014/12/19/store-uuid-optimized-way/
 #[derive(Debug)]
 pub struct OrderedUuid(Uuid);
+
+struct Config {
+    ctx: UuidV1Context,
+    node: Uuid,
+}
 
 lazy_static! {
     static ref CONFIG: Config = {
@@ -45,11 +49,6 @@ lazy_static! {
         };
         Config { ctx, node }
     };
-}
-
-struct Config {
-    ctx: UuidV1Context,
-    node: Uuid,
 }
 
 pub trait Uuid1 {
