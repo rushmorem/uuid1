@@ -1,6 +1,12 @@
 [package]
 name = "uuid1"
-version = "0.1.0"
+description = "UUID v1 Batteries"
+version = "0.0.1-pre"
+license = "MIT/Apache-2.0"
+repository = "https://github.com/rushmorem/uuid1"
+documentation = "https://docs.rs/uuid1"
+readme = "README.md"
+keywords = ["uuid"]
 authors = ["rushmorem <rushmore@webenchanter.com>"]
 
 [features]
