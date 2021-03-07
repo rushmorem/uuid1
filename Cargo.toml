@@ -1,7 +1,7 @@
 [package]
 name = "uuid1"
 description = "UUID v1 Batteries"
-version = "0.0.2-pre"
+version = "0.0.2"
 license = "MIT/Apache-2.0"
 repository = "https://github.com/rushmorem/uuid1"
 documentation = "https://docs.rs/uuid1"
