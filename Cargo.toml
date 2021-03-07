@@ -8,12 +8,13 @@ documentation = "https://docs.rs/uuid1"
 readme = "README.md"
 keywords = ["uuid"]
 authors = ["rushmorem <rushmore@webenchanter.com>"]
+edition = "2018"
 
 [features]
 serde = ["uuid/serde"]
 
 [dependencies]
-chrono = "0.4"
-lazy_static = "0.2"
-rand = "0.3"
-uuid = { version = "0.5", features = ["v1", "v4", "use_std"] }
+chrono = "0.4.19"
+lazy_static = "1.4.0"
+rand = "0.8.3"
+uuid = { version = "0.8.2", features = ["v1", "v4", "std"] }

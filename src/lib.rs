@@ -3,35 +3,25 @@
 //! This library provides convenient methods for generating version 1 UUIDs
 //! and ordering them.
 
-extern crate chrono;
-#[macro_use]
-extern crate lazy_static;
-extern crate rand;
-extern crate uuid;
-
 use std::fmt;
 use std::fs::File;
 use std::io::Read;
 
 use chrono::Utc;
-use rand::Rand;
-use uuid::{Uuid, UuidV1Context};
+use uuid::v1::{Context, Timestamp};
+use uuid::Uuid;
 
 /// https://www.percona.com/blog/2014/12/19/store-uuid-optimized-way/
 #[derive(Debug)]
 pub struct OrderedUuid(Uuid);
 
 struct Config {
-    ctx: UuidV1Context,
+    ctx: Context,
     node: Uuid,
 }
 
-lazy_static! {
+lazy_static::lazy_static! {
     static ref CONFIG: Config = {
-        let ctx = {
-            let mut rng = rand::thread_rng();
-            UuidV1Context::rand(&mut rng)
-        };
         let node = {
             let mut machine_id = None;
             if let Ok(mut file) = File::open("/etc/machine-id") {
@@ -47,6 +37,7 @@ lazy_static! {
                 None => Uuid::new_v4(),
             }
         };
+        let ctx = Context::new(rand::random());
         Config { ctx, node }
     };
 }
@@ -59,37 +50,40 @@ pub trait Uuid1 {
 impl Uuid1 for Uuid {
     fn v1() -> Uuid {
         let ctx = &CONFIG.ctx;
-        let node = &CONFIG.node.as_bytes()[..6];
+        let node_id = &CONFIG.node.as_bytes()[..6];
         let now = Utc::now();
         let seconds = now.timestamp() as u64;
         let nsecs = now.timestamp_subsec_nanos();
-        Uuid::new_v1(ctx, seconds, nsecs, node).unwrap()
+        let ts = Timestamp::from_unix(ctx, seconds, nsecs);
+        Uuid::new_v1(ts, node_id).unwrap()
     }
 
     fn ordered(&self) -> Option<OrderedUuid> {
         if self.get_version_num() == 1 {
             let ordered: [u8; 16] = {
                 let bytes = self.as_bytes();
-                unsafe {[
-                    *bytes.get_unchecked(6),
-                    *bytes.get_unchecked(7),
-                    *bytes.get_unchecked(4),
-                    *bytes.get_unchecked(5),
-                    *bytes.get_unchecked(0),
-                    *bytes.get_unchecked(1),
-                    *bytes.get_unchecked(2),
-                    *bytes.get_unchecked(3),
-                    *bytes.get_unchecked(8),
-                    *bytes.get_unchecked(9),
-                    *bytes.get_unchecked(10),
-                    *bytes.get_unchecked(11),
-                    *bytes.get_unchecked(12),
-                    *bytes.get_unchecked(13),
-                    *bytes.get_unchecked(14),
-                    *bytes.get_unchecked(15),
-                ]}
+                unsafe {
+                    [
+                        *bytes.get_unchecked(6),
+                        *bytes.get_unchecked(7),
+                        *bytes.get_unchecked(4),
+                        *bytes.get_unchecked(5),
+                        *bytes.get_unchecked(0),
+                        *bytes.get_unchecked(1),
+                        *bytes.get_unchecked(2),
+                        *bytes.get_unchecked(3),
+                        *bytes.get_unchecked(8),
+                        *bytes.get_unchecked(9),
+                        *bytes.get_unchecked(10),
+                        *bytes.get_unchecked(11),
+                        *bytes.get_unchecked(12),
+                        *bytes.get_unchecked(13),
+                        *bytes.get_unchecked(14),
+                        *bytes.get_unchecked(15),
+                    ]
+                }
             };
-            let uuid = Uuid::from_bytes(&ordered).unwrap();
+            let uuid = Uuid::from_bytes(ordered);
             return Some(OrderedUuid(uuid));
         }
         None
@@ -104,7 +98,7 @@ impl fmt::Display for OrderedUuid {
 
 #[cfg(test)]
 mod tests {
-    use Uuid1;
+    use crate::Uuid1;
     use uuid::Uuid;
 
     #[test]
